@@ -14,6 +14,20 @@ Paddle.prototype.render = function () {
     this.context.fill();
 };
 
+Paddle.prototype.move = function (direction) {
+    if (direction === "up") {
+        this.yPosition -= this.speed;
+        if (this.yPosition < 0) {
+            this.yPosition = 0;
+        }
+    } else if (direction === "down") {
+        this.yPosition += this.speed;
+        if (this.yPosition >= (this.context.canvas.height - this.height)) {
+            this.yPosition = this.context.canvas.height - this.height;
+        }
+    }
+};
+
 function Ball(initialXPos, initialYPos, radius, context) {
     this.xPosition = initialXPos;
     this.yPosition = initialYPos;
@@ -33,7 +47,8 @@ function Player(context) {
     this.paddle = new Paddle(782, 237.5, 8, 75, 10, context);
     this.paddle.leadingEdge = this.paddle.xPosition;
     this.paddle.backEdge = this.paddle.xPosition + this.paddle.width;
-    this.score = 0;
+    
+    
 }
 
 Player.prototype.render = function () {
@@ -45,13 +60,19 @@ function Computer(context) {
     this.paddle = new Paddle(10, 237.5, 8, 75, 7.5, context);
     this.paddle.leadingEdge = this.paddle.xPosition + this.paddle.width;
     this.paddle.backEdge = this.paddle.xPosition;
-    this.score = 0;
+   
 }
 
 Computer.prototype.render = function () {
     this.paddle.render();
 };
 
+var animate = window.requestAnimationFrame  ||
+        window.webkitRequestAnimationFrame  ||
+        window.mozRequestAnimationFrame     ||
+        window.oRequestAnimationFrame       ||
+        window.msRequestAnimationFrame      ||
+        function(callback) { window.setTimeout(callback, 1000/60) };
 
 
 
@@ -60,6 +81,7 @@ var context = canvas.getContext('2d');
 var player = new Player(context);
 var computer = new Computer(context);
 var ball = new Ball(400, 275, 10, context);
+var window =  new window();
 
 
 function render() {
@@ -68,7 +90,24 @@ function render() {
     ball.render();
 }
 
+function step() {
+    render();
+    animate(step);
+};
+
 
 window.onload = function () {
-    return render();
+    window.addEventListener('keyup', function (event) {
+        playerInput[event.keyCode] = false;
+    });
+    window.addEventListener('keydown', function (event) {
+        if (event.keyCode === 38 && playerInput[40]) {
+            playerInput[40] = false;
+        } else if (event.keyCode === 40 && playerInput[38]) {
+            playerInput[38] = false;
+        }
+        playerInput[event.keyCode] = true;
+    }
+    
+     animate(step);
 };
